@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.next/
+.turbo/
+coverage/
+*.tsbuildinfo
+*.log
+.env
+.env.local
+.DS_Store
+
+# Foundry
+packages/contracts/out/
+packages/contracts/cache/
+packages/contracts/broadcast/
+# Local anvil deployments change every run; testnet/mainnet files are committed.
+packages/contracts/deployments/31337.json

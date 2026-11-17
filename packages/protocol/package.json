@@ -1,0 +1,38 @@
+{
+  "name": "@blackbox/protocol",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Blackbox seal protocol: canonical JSON, decision records, leaves, Merkle batches, verification.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./vectors.json": "./vectors.json"
+  },
+  "files": [
+    "dist",
+    "vectors.json"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run && node scripts/browser-check.mjs",
+    "vectors": "tsx scripts/gen-vectors.ts"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.4.0"
+  },
+  "devDependencies": {
+    "canonicalize": "^5.1.0",
+    "esbuild": "^0.28.0",
+    "fast-check": "^4.10.0",
+    "playwright": "1.63.0",
+    "tsx": "^4.23.0",
+    "viem": "^2.58.0",
+    "vitest": "^4.1.0"
+  }
+}
