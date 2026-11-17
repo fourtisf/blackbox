@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {IAgentRegistry} from "./IAgentRegistry.sol";
+
 /// @title AgentRegistry
 /// @notice Binds one AI trading agent to one wallet and authorizes the key that seals its decisions.
-/// @dev Draft for Claude Code. Review, test and harden before any deployment.
-contract AgentRegistry {
+/// @dev No owner and no upgrades. The agent id is derived from the registering wallet, so nobody can
+///      register (or front-run) another wallet's id, and an id that was ever used can never be reused,
+///      so a bad record cannot be reset under the same id.
+contract AgentRegistry is IAgentRegistry {
     struct Agent {
         address wallet;
         address sealer;
@@ -13,9 +17,9 @@ contract AgentRegistry {
         string metaURI;
     }
 
-    mapping(bytes32 => Agent) public agents;
-    mapping(address => bytes32) public agentOf; // active agent per wallet
-    mapping(bytes32 => bool) public used; // ids can never be reused
+    mapping(bytes32 agentId => Agent) public agents;
+    /// @notice The active agent of a wallet, or zero.
+    mapping(address wallet => bytes32 agentId) public agentOf;
 
     event Registered(bytes32 indexed agentId, address indexed wallet, address sealer, string metaURI);
     event SealerChanged(bytes32 indexed agentId, address sealer);
@@ -29,16 +33,26 @@ contract AgentRegistry {
     error ZeroAddress();
 
     modifier onlyWallet(bytes32 agentId) {
-        if (agents[agentId].wallet != msg.sender) revert NotWallet();
-        if (!agents[agentId].active) revert Inactive();
+        Agent storage a = agents[agentId];
+        if (a.wallet != msg.sender) revert NotWallet();
+        if (!a.active) revert Inactive();
         _;
     }
 
-    function register(bytes32 agentId, address sealer, string calldata metaURI) external {
-        if (used[agentId]) revert IdUsed();
-        if (agentOf[msg.sender] != bytes32(0)) revert WalletHasAgent();
+    /// @notice agentId = keccak256(abi.encode(wallet, chainId, salt)); the CLI computes the same value.
+    function agentIdFor(address wallet, bytes32 salt) public view returns (bytes32) {
+        return keccak256(abi.encode(wallet, block.chainid, salt));
+    }
+
+    /// @notice Registers the caller's wallet as an agent. The record starts at this block.
+    function register(bytes32 salt, address sealer, string calldata metaURI)
+        external
+        returns (bytes32 agentId)
+    {
         if (sealer == address(0)) revert ZeroAddress();
-        used[agentId] = true;
+        if (agentOf[msg.sender] != bytes32(0)) revert WalletHasAgent();
+        agentId = agentIdFor(msg.sender, salt);
+        if (agents[agentId].wallet != address(0)) revert IdUsed();
         agents[agentId] = Agent({
             wallet: msg.sender,
             sealer: sealer,
@@ -50,12 +64,14 @@ contract AgentRegistry {
         emit Registered(agentId, msg.sender, sealer, metaURI);
     }
 
+    /// @notice Rotates the recorder's sealer key.
     function setSealer(bytes32 agentId, address sealer) external onlyWallet(agentId) {
         if (sealer == address(0)) revert ZeroAddress();
         agents[agentId].sealer = sealer;
         emit SealerChanged(agentId, sealer);
     }
 
+    /// @notice Name, runtime, model and market as JSON at a URL or a data: URI.
     function setMeta(bytes32 agentId, string calldata metaURI) external onlyWallet(agentId) {
         agents[agentId].metaURI = metaURI;
         emit MetaChanged(agentId, metaURI);

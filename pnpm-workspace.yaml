@@ -8,3 +8,9 @@ onlyBuiltDependencies:
   - '@prisma/engines'
   - esbuild
   - prisma
+
+# Foundry's npm postinstall only re-downloads the platform binary when the optional
+# platform package is missing; pnpm installs that package, so the script is not needed.
+ignoredBuiltDependencies:
+  - '@foundry-rs/anvil'
+  - '@foundry-rs/forge'
