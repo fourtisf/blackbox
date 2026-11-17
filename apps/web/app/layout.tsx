@@ -2,6 +2,7 @@ import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { Analytics } from '@/components/analytics';
 import { Footer } from '@/components/footer';
 import { InteractionsProvider } from '@/components/interactions';
 import { Nav } from '@/components/nav';
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <main id="app">{children}</main>
             <Footer />
             <div className="tip" id="tip" aria-hidden="true" />
+            <Analytics />
           </InteractionsProvider>
         </WalletProvider>
       </body>

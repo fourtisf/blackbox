@@ -14,8 +14,8 @@ export default function Privacy() {
       <h2>What we collect</h2>
       <ul>
         <li>
-          <b>Waitlist:</b> your email, what brings you here, and which button you used. Used only to tell you
-          when Blackbox opens.
+          <b>Waitlist:</b> your email, what brings you here, and which button you used. Used only to confirm
+          your address and tell you when Blackbox opens. Every email has a link that deletes your address.
         </li>
         <li>
           <b>Public chain data:</b> wallet addresses, seals and trades on Robinhood Chain. This is public by

@@ -82,6 +82,9 @@ export function Footer() {
                 </li>
               )}
               <li>
+                <Link href="/about">About</Link>
+              </li>
+              <li>
                 <Link href="/#token">$BOX</Link>
               </li>
               <li>

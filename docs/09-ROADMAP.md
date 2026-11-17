@@ -25,6 +25,15 @@ Also built (approved after review): demo labels, waitlist (web + `POST /v1/waitl
 Done when: side-by-side screenshots match the prototype; Lighthouse desktop performance ≥ 85, accessibility ≥ 95.
 Result: landing, leaderboard, verify and docs score 100 on performance, accessibility, best practices and SEO; agent pages 100 / 97 / 100 (SEO is intentionally blocked for demo agent pages).
 
+## Pre-launch (done, between Milestones 2 and 3)
+
+- [x] Waitlist: honeypot, double opt-in email (SMTP), one-click unsubscribe, admin page and CSV export.
+- [x] About page, security contact and `security.txt`, security headers, cookie-free analytics (Plausible or Umami, off until configured).
+- [x] GitHub Actions CI: lint, typecheck, unit, contract, browser and integration tests, build, on Node 20 and 22.
+- [x] VPS deploy kit (`infra/setup-vps.sh`, `deploy.sh`, `backup.sh`) and the Indonesian guide `infra/PANDUAN-DEPLOY.md`.
+
+Done when ALFA has run the setup on the VPS with a real domain (needs: VPS access, domain, SMTP account, About content).
+
 ## Milestone 3: Recorder
 
 - [ ] CLI commands from `03-RECORDER.md`: `init`, `status`, `wrap`, `mode`, `reveal`, `uninstall`.

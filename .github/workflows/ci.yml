@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Lint, typecheck, test, build (Node ${{ matrix.node }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+
+    # Real Postgres and Redis for the API's integration tests (same credentials as .env.example).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: blackbox
+          POSTGRES_PASSWORD: change-me
+          POSTGRES_DB: blackbox
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U blackbox -d blackbox"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+
+    env:
+      # Makes the protocol's browser check fail (instead of skip) if Chromium is missing.
+      CI: 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Install dependencies (also installs forge and anvil)
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium for the protocol browser check
+        run: pnpm --filter protocol exec playwright install --with-deps chromium
+
+      - name: Environment
+        run: cp .env.example .env
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit, contract and browser tests
+        run: pnpm test
+
+      - name: Database migrations
+        run: pnpm --filter api prisma migrate deploy
+
+      - name: API integration tests (Postgres + Redis)
+        run: pnpm --filter api test:integration
+
+      - name: Build
+        run: pnpm build

@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app.js';
 import type { Deps } from '../src/app.js';
+import { createMemoryWaitlistStore } from '../src/waitlist.js';
 
 const up = async () => {};
 const down = async () => {
   throw new Error('connection refused');
 };
 const hang = () => new Promise<void>(() => {});
-const app = (deps: Partial<Deps> = {}) => buildApp({ pingDb: up, pingRedis: up, addToWaitlist: up, ...deps });
+const app = (deps: Partial<Deps> = {}) =>
+  buildApp({ pingDb: up, pingRedis: up, waitlist: createMemoryWaitlistStore(), sendMail: null, ...deps });
 
 describe('GET /v1/health', () => {
   it('is 200 when the database and Redis answer', async () => {

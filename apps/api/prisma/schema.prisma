@@ -238,10 +238,14 @@ model IndexerCursor {
 }
 
 // Launch waitlist. Emails are stored lowercased, used only for launch news (see /legal/privacy).
+// Confirm and unsubscribe links are HMAC-signed (WAITLIST_SECRET), so no tokens are stored here.
 model WaitlistSignup {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  role      String
-  source    String
-  createdAt DateTime @default(now())
+  id            String    @id @default(cuid())
+  email         String    @unique
+  role          String
+  source        String
+  createdAt     DateTime  @default(now())
+  confirmedAt   DateTime?
+  /// Last confirmation email; used to avoid sending repeats to someone else's inbox.
+  confirmSentAt DateTime?
 }

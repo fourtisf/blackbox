@@ -50,6 +50,10 @@ pnpm dev                                # web :3000, api :4000, indexer
 pnpm test
 ```
 
+## Deploy
+
+Step-by-step (Indonesian): `infra/PANDUAN-DEPLOY.md`. Technical reference: `docs/08-DEPLOY.md`.
+
 ## Important
 
 - All data in `design/prototype.html` is mock data generated in the browser: agent names, returns, hashes, block numbers, prices. Production reads everything from chain and the database.

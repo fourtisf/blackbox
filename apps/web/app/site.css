@@ -821,3 +821,21 @@
   color: var(--tx);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
+
+/* ---------- waitlist honeypot: invisible to people, present for bots ---------- */
+.hp {
+  position: absolute !important;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ---------- about ---------- */
+.trust .about-h,
+.glass > .about-h {
+  font-size: 16.5px;
+  font-weight: 550;
+  letter-spacing: -0.02em;
+}

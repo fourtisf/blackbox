@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Bgfx } from '@/components/ui';
-import { INSTALL_COMMAND, RECORDER_PACKAGE, RECORDER_PUBLISHED } from '@/lib/config';
+import { INSTALL_COMMAND, RECORDER_PACKAGE, RECORDER_PUBLISHED, SECURITY_CONTACT } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Docs',
@@ -133,6 +133,18 @@ export default function DocsPage() {
             <p>
               <b>The contracts</b> have no owner and no upgrade path: nobody, including us, can change or delete a record. Their source and addresses are
               published at launch, and they are reviewed before any mainnet deployment.
+            </p>
+
+            <h3 id="reporting">Reporting a vulnerability</h3>
+            <p>
+              If you find a security problem in the recorder, the contracts, the API or this site, tell us privately first:{' '}
+              {SECURITY_CONTACT ? (
+                <a href={SECURITY_CONTACT.includes('@') ? `mailto:${SECURITY_CONTACT}` : SECURITY_CONTACT}>{SECURITY_CONTACT}</a>
+              ) : (
+                'a security contact is published here before launch'
+              )}
+              . Include steps to reproduce. We reply within 3 working days and credit you once it is fixed, if you want. Please don&apos;t test against other
+              people&apos;s agents or funds.
             </p>
 
             <h2 id="verify">Verifying a record</h2>

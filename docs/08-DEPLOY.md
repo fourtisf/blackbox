@@ -13,21 +13,21 @@
 
 ## Build and run
 
+Everything below is scripted and tested; the step-by-step guide (Indonesian) is `infra/PANDUAN-DEPLOY.md`.
+
 ```bash
-git clone <repo> /var/www/blackbox && cd /var/www/blackbox
-cp .env.example .env   # fill values
-pnpm install --frozen-lockfile
-pnpm --filter api prisma migrate deploy
-pnpm build
-pm2 start infra/ecosystem.config.js
-pm2 save && pm2 startup
-sudo cp infra/nginx.conf /etc/nginx/sites-available/blackbox
-sudo ln -s /etc/nginx/sites-available/blackbox /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d blackbox.example -d api.blackbox.example
+# once, on a fresh Ubuntu 22.04/24.04 server, from the repo checkout (/var/www/blackbox)
+sudo bash infra/setup-vps.sh --domain blackbox.example --api-domain api.blackbox.example --email ops@example.com --prelaunch
+
+# every later update, as the app user
+sudo -u blackbox -H bash infra/deploy.sh --prelaunch
 ```
 
-## Processes (`infra/ecosystem.config.js`)
+`setup-vps.sh` is idempotent and supports `--dry-run`. It installs Node (22 by default, `--node 20` to pin the spec'd version), pnpm, PM2, Nginx, Certbot, PostgreSQL 16 and Redis 7; creates the `blackbox` user, database and `.env` with fresh secrets (`WAITLIST_SECRET`, `ADMIN_TOKEN`, `SESSION_SECRET`, database password); migrates, builds and starts PM2; renders `infra/nginx.conf` for the domains (dropping IPv6 listeners when the server has no IPv6); enables UFW (22, 80, 443), TLS with Certbot, and the nightly backup cron. `--prelaunch` builds and runs only `bb-web` and `bb-api`; drop it once the indexer has a chain to read.
+
+## Processes (`infra/ecosystem.config.cjs`)
+
+The file is `.cjs` because the repo is an ES module package, and it loads the repo-root `.env` into every process.
 
 | Name | Command | Instances |
 |---|---|---|
@@ -47,7 +47,7 @@ The live feed needs `proxy_buffering off` and a long read timeout on `/v1/feed/l
 
 ## Backups and monitoring
 
-- Nightly `pg_dump` to off-server storage, keep 14 days.
+- Nightly `pg_dump` (`infra/backup.sh`, 03:17, keeps 14 days in `/var/backups/blackbox`); set `BACKUP_RSYNC_TARGET` to copy off the server.
 - PM2 logs rotated (`pm2 install pm2-logrotate`).
 - Health endpoints: `GET /v1/health` (API: db, redis, rpc) and indexer lag (latest chain block − cursor) exposed at `/v1/health/indexer`. Alert to Telegram when lag > 300 blocks or relayer balance is low.
 

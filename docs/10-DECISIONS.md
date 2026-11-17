@@ -60,3 +60,16 @@ Approved before the build (protocol changes 1 to 3), or chosen during it where t
 | M2-8 | Wallet | Injected wallets via EIP-1193 now; wagmi and WalletConnect arrive with real registration in Milestone 4. |
 | M2-9 | Legal | Terms, privacy and risk pages are drafts with a visible banner and [placeholders]. **ALFA: have a lawyer review them, and fill in the company, jurisdiction and contact.** |
 | M2-10 | Search engines | In demo mode robots.txt keeps agent, verify, dashboard and connect pages out of search results. |
+
+## Decided before launch
+
+| # | Topic | Decision |
+|---|---|---|
+| P-1 | Waitlist links | Confirm and unsubscribe links are HMAC-signed with `WAITLIST_SECRET` instead of stored tokens; they never expire. Unsubscribing deletes the row. |
+| P-2 | Double opt-in | On when `SMTP_URL` is set. One confirmation email per address per 10 minutes, so the form can't be used to flood someone's inbox. |
+| P-3 | Admin | A Bearer `ADMIN_TOKEN` (≥ 24 chars) protects the export; `/admin` keeps the token in the tab's memory only. |
+| P-4 | Client IP | Fastify `trustProxy: 'loopback'`: rate limits use the real visitor IP behind Nginx; the header is ignored from anyone else. |
+| P-5 | Headers | `X-Frame-Options`, `frame-ancestors 'none'`, `nosniff`, referrer and permissions policies; HSTS in Nginx. No full CSP yet: it needs nonces for Next.js and can break wallet extensions. |
+| P-6 | Node on the VPS | The setup script installs Node 22 by default (Node 20 is end of life); `--node 20` pins the spec'd version. **ALFA** |
+| P-7 | PM2 file | `infra/ecosystem.config.cjs` (was `.js`, which PM2 can't load in an ES module repo); it loads the root `.env`. |
+| P-8 | Team | `apps/web/content/team.ts` starts empty, so the About page hides the team section until ALFA fills it in. **ALFA** |

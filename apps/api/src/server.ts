@@ -2,6 +2,8 @@ import { PrismaClient } from '@prisma/client';
 import { Redis } from 'ioredis';
 import { buildApp } from './app.js';
 import { loadEnv } from './env.js';
+import { createMailer } from './mailer.js';
+import { prismaWaitlistStore } from './waitlist-store.js';
 
 const env = loadEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.databaseUrl });
@@ -16,11 +18,21 @@ const app = buildApp(
       if (redis.status === 'wait') await redis.connect();
       await redis.ping();
     },
-    addToWaitlist: async (email, role, source) => {
-      await prisma.waitlistSignup.upsert({ where: { email }, create: { email, role, source }, update: {} });
+    waitlist: prismaWaitlistStore(prisma),
+    sendMail: createMailer(env.smtpUrl, env.mailFrom),
+  },
+  {
+    logger: { level: env.nodeEnv === 'production' ? 'info' : 'debug' },
+    // Behind Nginx on the same host: take the client IP from X-Forwarded-For, but only from a local proxy.
+    trustProxy: 'loopback',
+    corsOrigins: env.corsOrigins,
+    waitlist: {
+      appUrl: env.appUrl,
+      apiUrl: env.apiUrl,
+      secret: env.waitlistSecret,
+      ...(env.adminToken ? { adminToken: env.adminToken } : {}),
     },
   },
-  { logger: { level: env.nodeEnv === 'production' ? 'info' : 'debug' }, corsOrigins: env.corsOrigins },
 );
 
 const shutdown = async (signal: string) => {

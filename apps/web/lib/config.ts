@@ -35,3 +35,7 @@ export const SOCIAL = {
   telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL ?? '',
   github: process.env.NEXT_PUBLIC_GITHUB_URL ?? '',
 };
+
+/** Shown on /about and in security.txt; each appears only when set. */
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? '';
+export const SECURITY_CONTACT = process.env.NEXT_PUBLIC_SECURITY_CONTACT ?? '';

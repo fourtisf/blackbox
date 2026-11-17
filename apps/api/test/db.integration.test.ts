@@ -3,6 +3,7 @@ import { Redis } from 'ioredis';
 import { afterAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app.js';
 import { loadEnv } from '../src/env.js';
+import { prismaWaitlistStore } from '../src/waitlist-store.js';
 
 const env = loadEnv();
 const prisma = new PrismaClient({ datasourceUrl: env.databaseUrl });
@@ -17,22 +18,24 @@ describe('against real Postgres and Redis', () => {
     const app = buildApp({
       pingDb: async () => void (await prisma.$queryRaw`SELECT 1`),
       pingRedis: async () => void (await redis.ping()),
-      addToWaitlist: async () => {},
+      waitlist: prismaWaitlistStore(prisma),
+      sendMail: null,
     });
     const res = await app.inject('/v1/health');
     expect(res.json()).toMatchObject({ ok: true, db: 'ok', redis: 'ok' });
   });
 
-  it('waitlist signups are stored once per email', async () => {
+  it('waitlist store: one row per email, confirm, then delete', async () => {
+    const store = prismaWaitlistStore(prisma);
     const email = `it-${Date.now()}@example.com`;
-    const add = (role: string) =>
-      prisma.waitlistSignup.upsert({ where: { email }, create: { email, role, source: 'test' }, update: {} });
-    await add('owner');
-    await add('builder');
-    const rows = await prisma.waitlistSignup.findMany({ where: { email } });
-    expect(rows).toHaveLength(1);
-    expect(rows[0]!.role).toBe('owner');
-    await prisma.waitlistSignup.delete({ where: { email } });
+    await store.upsert(email, 'owner', 'test');
+    const again = await store.upsert(email, 'builder', 'test');
+    expect(again.role).toBe('owner');
+    expect(await store.confirm(email, new Date())).toBe(true);
+    expect((await store.all()).find((r) => r.email === email)?.confirmedAt).toBeInstanceOf(Date);
+    expect(await store.remove(email)).toBe(true);
+    expect(await store.remove(email)).toBe(false);
+    expect(await store.confirm(email, new Date())).toBe(false);
   });
 
   it('the migrated schema accepts an indexer cursor', async () => {

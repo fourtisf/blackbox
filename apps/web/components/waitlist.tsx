@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useEffect, useId, useRef, useState } from 'react';
 import { joinWaitlist } from '@/lib/api/client';
+import { trackEvent } from './analytics';
 import type { WaitlistRole } from '@/lib/api/client';
 
 const ROLES: [WaitlistRole, string][] = [
@@ -16,6 +17,8 @@ export function WaitlistForm({ source, autoFocus }: { source: string; autoFocus?
   const [role, setRole] = useState<WaitlistRole>(source.startsWith('api') ? 'builder' : 'owner');
   const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
   const [error, setError] = useState('');
+  const [needsConfirm, setNeedsConfirm] = useState(false);
+  const [website, setWebsite] = useState(''); // honeypot
 
   if (state === 'done') {
     return (
@@ -33,8 +36,17 @@ export function WaitlistForm({ source, autoFocus }: { source: string; autoFocus?
           </svg>
         </span>
         <div>
-          <b>You&apos;re on the list.</b>
-          <p>We&apos;ll email you once, on the day Blackbox opens.</p>
+          {needsConfirm ? (
+            <>
+              <b>Check your inbox.</b>
+              <p>We sent a link to confirm your email. Once you click it, you&apos;re on the list.</p>
+            </>
+          ) : (
+            <>
+              <b>You&apos;re on the list.</b>
+              <p>We&apos;ll email you once, on the day Blackbox opens.</p>
+            </>
+          )}
         </div>
       </div>
     );
@@ -47,7 +59,9 @@ export function WaitlistForm({ source, autoFocus }: { source: string; autoFocus?
         e.preventDefault();
         setState('busy');
         try {
-          await joinWaitlist(email, role, source);
+          const res = await joinWaitlist(email, role, source, website);
+          setNeedsConfirm(res.confirm);
+          trackEvent('Waitlist', { role, source });
           setState('done');
         } catch (err) {
           setError((err as Error).message);
@@ -67,6 +81,18 @@ export function WaitlistForm({ source, autoFocus }: { source: string; autoFocus?
             {text}
           </button>
         ))}
+      </div>
+      <div className="hp" aria-hidden="true">
+        <label htmlFor={`${id}-website`}>Leave this field empty</label>
+        <input
+          id={`${id}-website`}
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
       </div>
       <div className="vform wl-row">
         <label className="sr" htmlFor={`${id}-email`}>

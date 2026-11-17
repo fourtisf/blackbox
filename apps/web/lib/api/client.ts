@@ -23,16 +23,60 @@ export function subscribeFeed(onSeal: (s: FeedSeal) => void, onError?: () => voi
 
 export type WaitlistRole = 'owner' | 'builder' | 'curious';
 
-export async function joinWaitlist(email: string, role: WaitlistRole, source: string): Promise<void> {
+export async function joinWaitlist(
+  email: string,
+  role: WaitlistRole,
+  source: string,
+  website = '',
+): Promise<{ confirm: boolean }> {
   const res = await fetch(`${PUBLIC_API_URL}/v1/waitlist`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email, role, source }),
+    body: JSON.stringify({ email, role, source, ...(website ? { website } : {}) }),
+  });
+  const body = (await res.json().catch(() => null)) as {
+    confirm?: boolean;
+    error?: { message?: string };
+  } | null;
+  if (!res.ok)
+    throw new Error(body?.error?.message ?? 'We could not save your email. Try again in a minute.');
+  return { confirm: !!body?.confirm };
+}
+
+/** Confirm or unsubscribe with the e and t from an emailed link. */
+export async function waitlistLink(action: 'confirm' | 'unsubscribe', e: string, t: string): Promise<void> {
+  const res = await fetch(`${PUBLIC_API_URL}/v1/waitlist/${action}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ e, t }),
   });
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
-    throw new Error(body?.error?.message ?? 'We could not save your email. Try again in a minute.');
+    throw new Error(body?.error?.message ?? 'Something went wrong. Try again in a minute.');
   }
+}
+
+export interface AdminWaitlist {
+  total: number;
+  confirmed: number;
+  emailConfirmation: boolean;
+  byRole: Record<string, number>;
+  bySource: Record<string, number>;
+  items: { email: string; role: string; source: string; createdAt: string; confirmedAt: string | null }[];
+}
+
+export async function fetchAdminWaitlist(
+  token: string,
+  format: 'json' | 'csv' = 'json',
+): Promise<AdminWaitlist | Blob> {
+  const res = await fetch(`${PUBLIC_API_URL}/v1/admin/waitlist${format === 'csv' ? '?format=csv' : ''}`, {
+    headers: { authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (res.status === 401) throw new Error('Wrong admin token.');
+  if (res.status === 404) throw new Error('The admin export is off. Set ADMIN_TOKEN on the API server.');
+  if (!res.ok) throw new Error(`The API answered ${res.status}.`);
+  return format === 'csv' ? res.blob() : ((await res.json()) as AdminWaitlist);
 }
 
 export const fetchAgentByWallet = async (wallet: string) => {

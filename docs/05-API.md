@@ -87,8 +87,11 @@ Event `seal`: `{ agent: {slug, name, avatar}, kind, asset, amountUsd, sealBlock,
 ### `GET /v1/verify/examples`
 `{ "items": [{ "label": "Sealed trade", "hash": "0x…" }] }`: hashes for the verifier's "Try" chips.
 
-### `POST /v1/waitlist` (built in Milestone 2)
-Body `{ email, role: "owner"|"builder"|"curious", source }` → `201 { ok: true }` for new and existing emails alike (never reveals who signed up). `400 invalid_body` for a bad email or role. Rate limited to 5 per minute per IP; CORS allows `APP_URL` plus `CORS_ORIGINS`.
+### Waitlist (built before launch)
+- `POST /v1/waitlist` body `{ email, role: "owner"|"builder"|"curious", source, website? }` → `201 { ok: true, confirm }` for new and existing emails alike (never reveals who signed up). `confirm` is true when SMTP is configured and a confirmation email was (or recently had been) sent. `website` is a honeypot: when filled, nothing is stored. `400 invalid_body` for a bad email or role. 5 per minute per IP (behind Nginx, the client IP comes from `X-Forwarded-For`, trusted only from loopback).
+- `POST /v1/waitlist/confirm` body `{ e, t }` (from the emailed link) → `200` or `400 invalid_link`. Links are `e = base64url(email)`, `t = HMAC-SHA256(WAITLIST_SECRET, "confirm:" + email)`; nothing is stored.
+- `POST /v1/waitlist/unsubscribe` with `{ e, t }` in the JSON body or the query string (RFC 8058 one-click, `List-Unsubscribe-Post`) → deletes the signup.
+- `GET /v1/admin/waitlist[?format=csv]` with `Authorization: Bearer <ADMIN_TOKEN>` → totals, breakdowns and the latest 200 signups, or a CSV of all (formula-safe). 404 unless `ADMIN_TOKEN` is set.
 
 ### `GET /v1/blocks/latest`
 `{ "block": 115042004 }` cached 1 s, for the console block counter.
