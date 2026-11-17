@@ -1,0 +1,235 @@
+// Draft schema for apps/api. Review and adjust; keep field meanings from docs/06-DATA-AND-METRICS.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Market {
+  stocks
+  memes
+}
+
+enum DecisionKind {
+  buy
+  sell
+  pass
+}
+
+model Agent {
+  id          String   @id // bytes32 agentId, 0x-hex
+  wallet      String   @unique
+  sealer      String
+  slug        String   @unique
+  name        String
+  runtime     String?
+  model       String?
+  market      Market   @default(memes)
+  avatarA     String
+  avatarB     String
+  boundBlock  BigInt
+  boundAt     DateTime
+  active      Boolean  @default(true)
+  hideWallet  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  batches    SealBatch[]
+  decisions  Decision[]
+  trades     Trade[]
+  transfers  Transfer[]
+  equity     EquitySnapshot[]
+  roundTrips RoundTrip[]
+  metrics    MetricCache[]
+  heartbeats Heartbeat[]
+  telegram   TelegramLink[]
+  alerts     Alert[]
+}
+
+model SealBatch {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id])
+  root      String
+  firstSeq  BigInt
+  count     Int
+  block     BigInt
+  tx        String
+  logIndex  Int
+  relayed   Boolean  @default(false)
+  ts        DateTime
+  decisions Decision[]
+
+  @@unique([agentId, firstSeq])
+  @@index([block])
+  @@index([root])
+}
+
+model Decision {
+  id         String       @id @default(cuid())
+  agentId    String
+  agent      Agent        @relation(fields: [agentId], references: [id])
+  seq        BigInt
+  leaf       String       @unique
+  batchId    String?
+  batch      SealBatch?   @relation(fields: [batchId], references: [id])
+  kind       DecisionKind?
+  assetSymbol  String?
+  assetAddress String?
+  ts         DateTime?
+  late       Boolean      @default(false)
+  // Revealed data, only stored after hash verification
+  revealed   Boolean      @default(false)
+  revealedAt DateTime?
+  record     Json?
+  salt       String?
+  trade      Trade?
+
+  @@unique([agentId, seq])
+  @@index([agentId, ts])
+}
+
+model Trade {
+  id         String    @id @default(cuid())
+  txHash     String    @unique
+  agentId    String
+  agent      Agent     @relation(fields: [agentId], references: [id])
+  block      BigInt
+  ts         DateTime
+  tokenIn    String
+  tokenOut   String
+  amountIn   Decimal   @db.Decimal(78, 0)
+  amountOut  Decimal   @db.Decimal(78, 0)
+  usdValue   Decimal   @db.Decimal(20, 2)
+  decisionId String?   @unique
+  decision   Decision? @relation(fields: [decisionId], references: [id])
+  sealed     Boolean   @default(false)
+
+  @@index([agentId, block])
+}
+
+model Transfer {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id])
+  txHash    String
+  logIndex  Int
+  block     BigInt
+  ts        DateTime
+  token     String
+  amount    Decimal  @db.Decimal(78, 0)
+  usdValue  Decimal  @db.Decimal(20, 2)
+  direction String   // "in" | "out"
+
+  @@unique([txHash, logIndex])
+  @@index([agentId, ts])
+}
+
+model TokenList {
+  address  String  @id
+  symbol   String
+  decimals Int
+  kind     String  // "stock" | "stable" | "meme" | "native"
+}
+
+model Price {
+  id     String   @id @default(cuid())
+  token  String
+  block  BigInt
+  ts     DateTime
+  usd    Decimal  @db.Decimal(38, 18)
+
+  @@index([token, ts])
+}
+
+model EquitySnapshot {
+  agentId    String
+  agent      Agent    @relation(fields: [agentId], references: [id])
+  day        DateTime @db.Date
+  equityUsd  Decimal  @db.Decimal(20, 2)
+  netFlowUsd Decimal  @db.Decimal(20, 2)
+  twrIndex   Decimal  @db.Decimal(30, 12)
+
+  @@id([agentId, day])
+}
+
+model RoundTrip {
+  id          String    @id @default(cuid())
+  agentId     String
+  agent       Agent     @relation(fields: [agentId], references: [id])
+  token       String
+  openedAt    DateTime
+  closedAt    DateTime?
+  realizedUsd Decimal?  @db.Decimal(20, 2)
+
+  @@index([agentId, closedAt])
+}
+
+model MetricCache {
+  agentId      String
+  agent        Agent    @relation(fields: [agentId], references: [id])
+  period       String   // "7" | "30" | "90" | "all"
+  ret          Float
+  pnl          Float
+  winRate      Float?
+  maxDrawdown  Float
+  trades       Int
+  sealCoverage Float
+  trustScore   Int?
+  rank         Int?
+  eligible     Boolean  @default(false)
+  updatedAt    DateTime @updatedAt
+
+  @@id([agentId, period])
+}
+
+model Heartbeat {
+  id            String   @id @default(cuid())
+  agentId       String
+  agent         Agent    @relation(fields: [agentId], references: [id])
+  ts            DateTime @default(now())
+  version       String
+  mode          String
+  queue         Int
+  lastSealBlock BigInt?
+
+  @@index([agentId, ts])
+}
+
+model TelegramLink {
+  id      String   @id @default(cuid())
+  agentId String
+  agent   Agent    @relation(fields: [agentId], references: [id])
+  chatId  String
+  createdAt DateTime @default(now())
+
+  @@unique([agentId, chatId])
+}
+
+model Alert {
+  id      String   @id @default(cuid())
+  agentId String
+  agent   Agent    @relation(fields: [agentId], references: [id])
+  type    String
+  details Json
+  ts      DateTime @default(now())
+  sent    Boolean  @default(false)
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  keyHash   String   @unique
+  label     String
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+  calls     Int      @default(0)
+}
+
+model IndexerCursor {
+  stream    String   @id
+  block     BigInt
+  updatedAt DateTime @updatedAt
+}
