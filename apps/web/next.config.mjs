@@ -1,3 +1,9 @@
+import nextEnv from '@next/env';
+import { fileURLToPath } from 'node:url';
+
+// One .env at the repo root serves every app.
+nextEnv.loadEnvConfig(fileURLToPath(new URL('../..', import.meta.url)));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
