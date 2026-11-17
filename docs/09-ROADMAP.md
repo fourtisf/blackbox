@@ -14,13 +14,16 @@ Done when: `pnpm test` passes, including protocol vectors and `forge test`; cont
 
 ## Milestone 2: Website on mock API (pixel match)
 
-- [ ] Next.js app with the design tokens, Geist fonts, noise and glow background.
-- [ ] Every page from the prototype built as components: landing (all sections), leaderboard, agent profile with replay and chart, verify. Plus `/connect` using the same components.
-- [ ] A mock data layer that mirrors the API response shapes in `05-API.md` (port the prototype's generator), switchable by env to the real API later.
-- [ ] Rewrite demo uses real `packages/protocol` hashing.
-- [ ] Visual check: screenshots of each page at 1440 and 390 next to the prototype; fix differences.
+- [x] Next.js app with the design tokens, Geist fonts, noise and glow background.
+- [x] Every page from the prototype built as components: landing (all sections), leaderboard, agent profile with replay and chart, verify. Plus `/connect` using the same components.
+- [x] A mock data layer that mirrors the API response shapes in `05-API.md` (port the prototype's generator), switchable by env to the real API later.
+- [x] Rewrite demo uses real `packages/protocol` hashing.
+- [x] Visual check: screenshots of each page at 1440 and 390 next to the prototype; fix differences.
+
+Also built (approved after review): demo labels, waitlist (web + `POST /v1/waitlist`), docs with security and trust score, FAQ, draft legal pages, owner dashboard, mobile menu, injected-wallet connection, every record state (private, late seal, no reasoning, recorder offline, sequence gaps, new and unranked agents), trust score column, explorer links, loading and error states, pagination, SVG badge, social preview images, robots and sitemap.
 
 Done when: side-by-side screenshots match the prototype; Lighthouse desktop performance ≥ 85, accessibility ≥ 95.
+Result: landing, leaderboard, verify and docs score 100 on performance, accessibility, best practices and SEO; agent pages 100 / 97 / 100 (SEO is intentionally blocked for demo agent pages).
 
 ## Milestone 3: Recorder
 

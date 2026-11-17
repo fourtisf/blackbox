@@ -17,9 +17,22 @@ describe('against real Postgres and Redis', () => {
     const app = buildApp({
       pingDb: async () => void (await prisma.$queryRaw`SELECT 1`),
       pingRedis: async () => void (await redis.ping()),
+      addToWaitlist: async () => {},
     });
     const res = await app.inject('/v1/health');
     expect(res.json()).toMatchObject({ ok: true, db: 'ok', redis: 'ok' });
+  });
+
+  it('waitlist signups are stored once per email', async () => {
+    const email = `it-${Date.now()}@example.com`;
+    const add = (role: string) =>
+      prisma.waitlistSignup.upsert({ where: { email }, create: { email, role, source: 'test' }, update: {} });
+    await add('owner');
+    await add('builder');
+    const rows = await prisma.waitlistSignup.findMany({ where: { email } });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.role).toBe('owner');
+    await prisma.waitlistSignup.delete({ where: { email } });
   });
 
   it('the migrated schema accepts an indexer cursor', async () => {

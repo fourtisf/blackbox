@@ -6,11 +6,7 @@ import { Avatar } from '../ui';
 
 export function PodiumCard({ a, rank }: { a: AgentListItem; rank: number }) {
   return (
-    <Link
-      href={`/agent/${a.slug}`}
-      className={`pc glass spot${rank === 1 ? ' glow-border first' : ''}`}
-      aria-label={`${a.name}, ranked ${rank}`}
-    >
+    <Link href={`/agent/${a.slug}`} className={`pc glass spot${rank === 1 ? ' glow-border first' : ''}`}>
       <div className="top">
         <Avatar name={a.name} pair={a.avatar} />
         <div>

@@ -236,3 +236,12 @@ model IndexerCursor {
   block     BigInt
   updatedAt DateTime @updatedAt
 }
+
+// Launch waitlist. Emails are stored lowercased, used only for launch news (see /legal/privacy).
+model WaitlistSignup {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  role      String
+  source    String
+  createdAt DateTime @default(now())
+}

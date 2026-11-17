@@ -7,7 +7,7 @@ const down = async () => {
   throw new Error('connection refused');
 };
 const hang = () => new Promise<void>(() => {});
-const app = (deps: Partial<Deps> = {}) => buildApp({ pingDb: up, pingRedis: up, ...deps });
+const app = (deps: Partial<Deps> = {}) => buildApp({ pingDb: up, pingRedis: up, addToWaitlist: up, ...deps });
 
 describe('GET /v1/health', () => {
   it('is 200 when the database and Redis answer', async () => {

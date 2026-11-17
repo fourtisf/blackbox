@@ -8,6 +8,9 @@ const Env = z.object({
   // PM2 (infra/ecosystem.config.js) sets PORT; local .env sets API_PORT.
   API_PORT: z.coerce.number().int().positive().optional(),
   PORT: z.coerce.number().int().positive().optional(),
+  APP_URL: z.string().url().default('http://localhost:3000'),
+  // Extra browser origins allowed by CORS, comma separated (e.g. a staging site).
+  CORS_ORIGINS: z.string().optional(),
 });
 
 export interface ApiEnv {
@@ -16,6 +19,7 @@ export interface ApiEnv {
   redisUrl: string;
   host: string;
   port: number;
+  corsOrigins: string[];
 }
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): ApiEnv {
@@ -31,5 +35,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): ApiEnv {
     redisUrl: e.REDIS_URL,
     host: e.API_HOST,
     port: e.API_PORT ?? e.PORT ?? 4000,
+    corsOrigins: [e.APP_URL, ...(e.CORS_ORIGINS ?? '').split(',')]
+      .map((o) => o.trim().replace(/\/$/, ''))
+      .filter(Boolean),
   };
 }

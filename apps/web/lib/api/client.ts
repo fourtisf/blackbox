@@ -1,6 +1,6 @@
 /** Browser-side API calls. Read data goes to the demo API or the real one; the waitlist always uses the real API. */
 import { DATA_API_BASE, PUBLIC_API_URL } from '../config';
-import type { FeedSeal, VerifyResponse } from './types';
+import type { AgentDetail, FeedSeal, RecorderHealth, VerifyResponse } from './types';
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { headers: { accept: 'application/json' } });
@@ -34,3 +34,11 @@ export async function joinWaitlist(email: string, role: WaitlistRole, source: st
     throw new Error(body?.error?.message ?? 'We could not save your email. Try again in a minute.');
   }
 }
+
+export const fetchAgentByWallet = async (wallet: string) => {
+  const res = await fetch(`${DATA_API_BASE}/v1/agents/${encodeURIComponent(wallet)}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Request failed (${res.status})`);
+  return (await res.json()) as AgentDetail;
+};
+export const fetchRecorderHealth = () => getJson<RecorderHealth>(`${DATA_API_BASE}/v1/owner/health`);

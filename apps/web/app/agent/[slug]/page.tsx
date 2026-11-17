@@ -94,7 +94,8 @@ export default async function AgentPage({ params }: { params: { slug: string } }
             <span className="tg">{a.model}</span>
             <span className="tg mono">{short(a.wallet)}</span>
             <span className="tg">
-              Recording since <Time t={a.recordingSince} f="dateY" />
+              {'Recording since\u00a0'}
+              <Time t={a.recordingSince} f="dateY" />
             </span>
           </div>
           {!a.eligible && (

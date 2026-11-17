@@ -22,6 +22,7 @@ Put these in `apps/web/app/globals.css` as CSS variables and map them in `tailwi
 - Ember orange (`--em`) is the brand: flight recorders are international orange. Use it only for primary buttons, the REC indicator, seal markers, the playhead and the featured card border.
 - Ice blue (`--ice`) marks proof: seal hashes, sealed state, coverage bars.
 - Green and red are for profit and loss only.
+- `--tx3` is `#767E91` on the site (prototype: `#666D80`). The prototype value is 3.86:1 against `--bg`, below the 4.5:1 this document requires; `#767E91` is the smallest step that passes on the page and on glass cards. Set in `apps/web/app/site.css`; the copied prototype CSS is untouched.
 - Never use a white or light background. Never pair black with gold.
 
 ## Typography
@@ -70,6 +71,10 @@ Put these in `apps/web/app/globals.css` as CSS variables and map them in `tailwi
 | `Replay` (client) | `.mini` timeline, `.r-list`, `.r-detail`, play/pause, keyboard |
 | `VerifyForm`, `VerifyResult` | `.vform`, `.vcard`, `.checks` |
 | `Avatar` | deterministic gradient from the agent id (see `PAIRS` in the prototype) |
+
+## Built in Milestone 2
+
+`apps/web/app/globals.css` is the prototype's stylesheet copied verbatim (Prettier skips it). Everything new is in `apps/web/app/site.css` with the same tokens: demo labels, mobile menu, wallet menu, waitlist form and dialog, FAQ, docs and legal layouts, connect steps, dashboard, private / late / no-reasoning / gap states, trust chip, pager, skeletons. The leaderboard's cells have 10px side padding (prototype: 12px) to fit the trust column.
 
 ## Responsive
 

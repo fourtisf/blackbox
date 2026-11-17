@@ -17,3 +17,4 @@ packages/contracts/deployments/
 packages/protocol/vectors.json
 packages/protocol/test/rfc8785/
 apps/api/prisma/migrations/
+apps/web/app/globals.css

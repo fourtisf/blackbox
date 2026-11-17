@@ -253,7 +253,7 @@ export function HeroConsole(props: {
             <small>Live feed</small>
           </div>
         </div>
-        <h4>Recording</h4>
+        <p className="c-h">Recording</p>
         {props.sidebar.map((a) => (
           <div className="c-ag" key={a.slug}>
             <Avatar name={a.name} pair={a.avatar} size={28} />
@@ -293,11 +293,11 @@ export function HeroConsole(props: {
         </ol>
       </div>
       <aside className="c-right">
-        <h4>Latest seal</h4>
+        <p className="c-h">Latest seal</p>
         <div className="c-card" id="sealCard">
           {card && <SealCard s={card} />}
         </div>
-        <h4>{sp.name}, last 30 days</h4>
+        <p className="c-h">{sp.name}, last 30 days</p>
         <div className="c-card">
           <div className="c-mini">
             <div>

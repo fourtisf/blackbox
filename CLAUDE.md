@@ -36,6 +36,7 @@ pnpm --filter contracts gas      # gas report
 pnpm --filter api test:integration     # needs pnpm db:up and migrations
 pnpm --filter protocol vectors   # regenerate vectors.json after a deliberate protocol change
 pnpm --filter recorder build && node packages/recorder/dist/cli.js --help
+pnpm --filter web dev           # website alone; demo data unless NEXT_PUBLIC_DATA_SOURCE=api
 ```
 
 ## Rules

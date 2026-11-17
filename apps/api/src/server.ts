@@ -16,8 +16,11 @@ const app = buildApp(
       if (redis.status === 'wait') await redis.connect();
       await redis.ping();
     },
+    addToWaitlist: async (email, role, source) => {
+      await prisma.waitlistSignup.upsert({ where: { email }, create: { email, role, source }, update: {} });
+    },
   },
-  { logger: { level: env.nodeEnv === 'production' ? 'info' : 'debug' } },
+  { logger: { level: env.nodeEnv === 'production' ? 'info' : 'debug' }, corsOrigins: env.corsOrigins },
 );
 
 const shutdown = async (signal: string) => {

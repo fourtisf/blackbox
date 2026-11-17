@@ -52,6 +52,13 @@ Header data, six stats (`ret30`, `pnl30`, `ret90OrSinceStart`, `winRate`, `maxDr
 ```
 When `revealed` is false, `reasoning`, `context` and `toolCalls` are omitted.
 
+Additional fields, used by the website since Milestone 2 (exact types in `apps/web/lib/api/types.ts`):
+- `seq` and `leaf` are `null` for a trade the recorder never captured (offline); `price` is the price when the agent decided.
+- `late: true` when the seal landed only after the trade; `autoCaptured: true` when the agent traded without recording reasoning. Both count as unsealed.
+- `outcome` is `{status:"open"}`, `{status:"closed", pnl, pct}`, `{status:"realized", pnl}` or `{status:"none"}`.
+- Agent list items add `trustScore` (`null` = "New") and `winRate: null` below 10 closed trips; `GET /v1/agents` lists ranked (eligible) agents only and returns `total`.
+- Agent detail adds `eligible`, `ineligibleReasons`, `trustScore`, `revealPolicy`, `closedTrips`, `lateCount`, `autoCapturedCount` and `sequenceGaps: [{from, to}]`.
+
 ### `GET /v1/verify/:hash`
 Accepts a leaf or a trade tx hash. Returns everything the browser needs to re-run `verify()` itself:
 ```json
@@ -73,6 +80,15 @@ One revealed, sealed, profitable buy from the current #1–3 agents, for the ben
 
 ### `GET /v1/feed/recent?limit=7` and `GET /v1/feed/live` (SSE)
 Event `seal`: `{ agent: {slug, name, avatar}, kind, asset, amountUsd, sealBlock, tradeBlock?, ts, reasoning? }`. Reasoning only if revealed. SSE sends a heartbeat comment every 15 s.
+
+### `GET /v1/agents/active?limit=5`
+`{ "items": [AgentListItem] }`: agents with the most recent seals, for the hero console sidebar.
+
+### `GET /v1/verify/examples`
+`{ "items": [{ "label": "Sealed trade", "hash": "0x…" }] }`: hashes for the verifier's "Try" chips.
+
+### `POST /v1/waitlist` (built in Milestone 2)
+Body `{ email, role: "owner"|"builder"|"curious", source }` → `201 { ok: true }` for new and existing emails alike (never reveals who signed up). `400 invalid_body` for a bad email or role. Rate limited to 5 per minute per IP; CORS allows `APP_URL` plus `CORS_ORIGINS`.
 
 ### `GET /v1/blocks/latest`
 `{ "block": 115042004 }` cached 1 s, for the console block counter.

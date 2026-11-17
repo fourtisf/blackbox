@@ -15,7 +15,7 @@ export function Footer() {
             <p className="tagl">The flight recorder for AI trading agents. Built on Robinhood Chain.</p>
           </div>
           <div>
-            <h4>Product</h4>
+            <h2>Product</h2>
             <ul>
               <li>
                 <Link href="/#how">How it works</Link>
@@ -35,7 +35,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4>Developers</h4>
+            <h2>Developers</h2>
             <ul>
               <li>
                 <Link href="/docs">Docs</Link>
@@ -69,7 +69,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4>Community</h4>
+            <h2>Community</h2>
             <ul>
               {SOCIAL.x && (
                 <li>
@@ -92,7 +92,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4>Legal</h4>
+            <h2>Legal</h2>
             <ul>
               <li>
                 <Link href="/legal/terms">Terms</Link>

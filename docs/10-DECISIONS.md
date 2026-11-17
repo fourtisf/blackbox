@@ -45,3 +45,18 @@ Approved before the build (protocol changes 1 to 3), or chosen during it where t
 | M1-11 | Local defaults | `.env.example` points at local anvil (chain 31337) instead of the unconfirmed Robinhood mainnet RPC. Robinhood values stay as comments until confirmed in Milestone 4. |
 | M1-12 | Mainnet guard | `Deploy.s.sol` refuses chain 4663 unless `BLACKBOX_ALLOW_MAINNET=true`. |
 | M1-13 | Tests needing services | `pnpm test` needs no database. The API's Postgres/Redis test is `pnpm --filter api test:integration`. The protocol's browser check needs Chromium (`pnpm --filter protocol exec playwright install chromium`); it is skipped with a warning if missing, and fails in CI. |
+
+## Decided in Milestone 2
+
+| # | Topic | Decision |
+|---|---|---|
+| M2-1 | Demo data | The site runs on the prototype's generator (ported exactly; a test runs the prototype's own code to prove it) with real protocol records and proofs. Every page that shows it carries a "Demo" label, and the hero pill reads "Demo: Sample data until the public launch". |
+| M2-2 | Demo clock | Demo data is anchored to the start of the current hour so every process serves identical leaves; the latest demo decision can be up to ~1.5 h old. |
+| M2-3 | Install command | `npx blackbox` belongs to an unrelated npm package. The site shows `npx @blackbox-rec/cli init` and, until `NEXT_PUBLIC_RECORDER_PUBLISHED=true`, install buttons open the waitlist. **ALFA: register the npm name before launch.** |
+| M2-4 | Pricing | Prices stay visible with a "free during the beta" note (decision #6). |
+| M2-5 | Copy changes | Added: FAQ, waitlist, docs, legal drafts, dashboard and connect copy, record-state messages. The API example uses `/v1/trust/<wallet>` (as in this file's partner API) instead of the prototype's `/v1/agents/...`. "Kestrel's real reasoning" drops "real" in demo mode. $BOX gets "Figures are planned... not an offer". |
+| M2-6 | Unsealed trades | A trade sent while the recorder was offline has no record, so the replay shows no reasoning for it (the prototype showed some). |
+| M2-7 | Contrast | `--tx3` lightened from `#666D80` to `#767E91` to meet 4.5:1 (docs/07). |
+| M2-8 | Wallet | Injected wallets via EIP-1193 now; wagmi and WalletConnect arrive with real registration in Milestone 4. |
+| M2-9 | Legal | Terms, privacy and risk pages are drafts with a visible banner and [placeholders]. **ALFA: have a lawyer review them, and fill in the company, jurisdiction and contact.** |
+| M2-10 | Search engines | In demo mode robots.txt keeps agent, verify, dashboard and connect pages out of search results. |

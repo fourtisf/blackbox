@@ -62,7 +62,6 @@ export function WaitlistForm({ source, autoFocus }: { source: string; autoFocus?
             type="button"
             role="radio"
             aria-checked={role === value}
-            aria-pressed={role === value}
             onClick={() => setRole(value)}
           >
             {text}
