@@ -1,0 +1,25 @@
+{
+  "name": "@blackbox/recorder",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The blackbox CLI and MCP proxy. npm name is undecided (docs/10-DECISIONS.md #2).",
+  "type": "module",
+  "bin": {
+    "blackbox": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@blackbox/protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.0"
+  }
+}

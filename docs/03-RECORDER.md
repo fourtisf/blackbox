@@ -68,7 +68,7 @@ agent → tools/call swap(...)
   proxy: find the newest record_decision within 120 s whose intent matches the call (same tokens, amount within 1%)
     none found:
       strict  → return MCP error "Call record_decision with your reasoning before trading." (agent retries)
-      lenient → create a record with reasoning "" and flag `autoCaptured`, continue
+      lenient → create a record with reasoning "" and autoCaptured: true, continue
   proxy: build record (seq = next local seq, prev = last leaf), hash, store locally with salt
   proxy: send SealRegistry.seal(agentId, leaf, seq, 1) from the sealer key
   proxy: wait for receipt (poll 150 ms, timeout 2 s)
@@ -91,7 +91,7 @@ Passes and auto-captured tool-call logs go into the batch queue (10 s or 64 reco
 
 SQLite at `~/.blackbox/agents/<agentId>/records.db`:
 - `records(seq PK, ts, kind, json, record_hash, salt, leaf, batch_root, seal_tx, seal_block, trade_tx, revealed_at)`
-- `tool_calls(id, ts, server, name, args_json, result_json, args_hash, result_hash, seq_ref)`
+- `tool_calls(id, ts, server, name, args_json, result_json, args_salt, result_salt, args_hash, result_hash, seq_ref)`; hashes are `toolHash(salt, value)` from `packages/protocol`
 - `queue(seq, attempts, next_try_at)`
 
 ## Reveal policy

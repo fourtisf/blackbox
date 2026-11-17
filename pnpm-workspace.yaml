@@ -2,15 +2,13 @@ packages:
   - apps/*
   - packages/*
 
-# pnpm 10 blocks dependency install scripts unless listed here.
-onlyBuiltDependencies:
-  - '@prisma/client'
-  - '@prisma/engines'
-  - esbuild
-  - prisma
-
-# Foundry's npm postinstall only re-downloads the platform binary when the optional
-# platform package is missing; pnpm installs that package, so the script is not needed.
-ignoredBuiltDependencies:
-  - '@foundry-rs/anvil'
-  - '@foundry-rs/forge'
+# pnpm 10 blocks dependency install scripts unless allowed here.
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  esbuild: true
+  prisma: true
+  # Foundry's npm postinstall only re-downloads the platform binary when the optional
+  # platform package is missing; pnpm installs that package, so the script is not needed.
+  '@foundry-rs/anvil': false
+  '@foundry-rs/forge': false

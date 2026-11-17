@@ -85,8 +85,8 @@ Each request carries headers `X-Agent-Id`, `X-Timestamp` (ms), `X-Signature` = s
 |---|---|---|
 | `POST /v1/recorder/connect-code` | `{ sealer, agentId, name, runtime, model, market }` (signed by sealer, agent not yet registered) | Returns a one-time `code` for `/connect?code=` (10 min TTL in Redis) |
 | `POST /v1/recorder/seal` | `{ req: SealRequest, sig }` | Relayed seal: API submits `sealBySig` from the relayer wallet, returns `{ txHash, block }` once included |
-| `POST /v1/recorder/links` | `{ items: [{ seq, leaf, txHash }] }` | Link trades to sealed decisions (validated by indexer) |
-| `POST /v1/recorder/reveal` | `{ items: [{ record, salt, proof, root }] }` | Verified with `packages/protocol` before storing |
+| `POST /v1/recorder/links` | `{ items: [{ seq, leaf, txHash, autoCaptured }] }` | Link trades to sealed decisions (validated by indexer). `autoCaptured` trades don't count toward seal coverage |
+| `POST /v1/recorder/reveal` | `{ items: [{ record, salt, proof, root, toolCalls? }] }` | Verified with `packages/protocol` before storing. Optional `toolCalls: [{ index, field: "args" \| "result", value, salt }]` reveals individual tool-call plaintext, each checked against its `toolHash` |
 | `POST /v1/recorder/heartbeat` | `{ version, mode, queue, lastSealBlock }` | Every 60 s |
 | `POST /v1/recorder/alerts` | `{ type: "loop"\|"spend_spike"\|"silence", details }` | Forwarded to linked Telegram chats |
 

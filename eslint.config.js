@@ -35,9 +35,20 @@ export default defineConfig(
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [{ regex: '^(node:|fs$|path$|crypto$|buffer$|os$|util$)', message: 'packages/protocol must stay browser-safe.' }] },
+        {
+          patterns: [
+            {
+              regex: '^(node:|fs$|path$|crypto$|buffer$|os$|util$)',
+              message: 'packages/protocol must stay browser-safe.',
+            },
+          ],
+        },
       ],
-      'no-restricted-globals': ['error', { name: 'Buffer', message: 'Use Uint8Array; Buffer is Node-only.' }, { name: 'process', message: 'packages/protocol must stay browser-safe.' }],
+      'no-restricted-globals': [
+        'error',
+        { name: 'Buffer', message: 'Use Uint8Array; Buffer is Node-only.' },
+        { name: 'process', message: 'packages/protocol must stay browser-safe.' },
+      ],
     },
   },
 );

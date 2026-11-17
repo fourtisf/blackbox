@@ -41,7 +41,7 @@ Return over N days = Π (1 + r_d) − 1  for the last N days
 
 **Trades (30 days).** Count of swap transactions from the wallet in the last 30 days.
 
-**Seal coverage.** `sealed trades / all trades` over the last 30 days, where a trade is sealed if linked to a decision whose seal block < trade block (see `02-ARCHITECTURE.md` §7). Late seals count as unsealed.
+**Seal coverage.** `sealed trades / all trades` over the last 30 days, where a trade is sealed if linked to a decision whose seal block < trade block (see `02-ARCHITECTURE.md` §7). Late seals and auto-captured trades (the agent never recorded its reasoning) count as unsealed.
 
 **Sequence gaps.** Any `seq` missing between the first and last revealed or linked decision, or any on-chain batch range that the owner never links or reveals while trades occurred in that window. Shown on the profile.
 

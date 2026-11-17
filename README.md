@@ -29,10 +29,26 @@ This folder is everything Claude Code needs to build the production version.
 | `docs/09-ROADMAP.md` | Milestones with task checklists and definition of done |
 | `docs/10-DECISIONS.md` | Assumptions made and questions ALFA still needs to answer |
 | `design/prototype.html` | The approved UI. Open in a browser. This is the visual source of truth |
-| `contracts/*.sol` | Draft Solidity for the two contracts |
-| `prisma/schema.prisma` | Draft database schema |
+| `packages/contracts/` | AgentRegistry and SealRegistry (Foundry), tests and deploy script |
+| `packages/protocol/` | The seal protocol: canonical JSON, hashing, Merkle proofs, `verify()`, golden vectors |
+| `apps/api/prisma/schema.prisma` | Database schema and migrations |
 | `infra/` | PM2 ecosystem file and Nginx config |
 | `.env.example` | Every environment variable |
+
+## Run it locally
+
+Needs Node 20.19+ (22 or 24 recommended), pnpm 10, and Docker for Postgres and Redis.
+
+```bash
+git clone --recursive <repo> && cd blackbox
+pnpm install
+cp .env.example .env
+pnpm db:up
+pnpm --filter api prisma migrate dev
+pnpm --filter contracts deploy:local    # in its own terminal; keeps anvil running
+pnpm dev                                # web :3000, api :4000, indexer
+pnpm test
+```
 
 ## Important
 

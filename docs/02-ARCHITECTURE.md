@@ -60,16 +60,19 @@ Every decision the agent makes, including passes, becomes a record:
   "context": { "price": "186.20", "volumeVs10d": "1.9", "rsi14": 56 },
   "reasoning": "NVDA reclaimed its 20-day average on volume 1.9x the 10-day mean…",
   "toolCalls": [
-    { "name": "get_quote", "args": "0x…keccak(args)", "result": "0x…keccak(result)" }
+    { "name": "get_quote", "args": "0x…toolHash(argsSalt, args)", "result": "0x…toolHash(resultSalt, result)" }
   ],
-  "prev": "0x…leaf of seq 1841 (zero hash for seq 0)"
+  "prev": "0x…leaf of seq 1841 (zero hash for seq 0)",
+  "autoCaptured": false
 }
 ```
 
 - `kind`: `buy`, `sell` or `pass`. Passes have `intent: null`.
 - Amounts are integer strings in token base units.
-- `toolCalls` carries hashes of arguments and results, not raw data, so the record stays small and private details never need revealing.
+- `toolCalls` carries salted hashes of arguments and results, not raw data, so the record stays small and private details never need revealing (see §3a).
 - `prev` chains records so any deletion breaks the chain.
+- `autoCaptured` is `true` only when the agent traded without calling `record_decision` and the recorder captured the trade itself (lenient mode). Such a record has `reasoning: ""`; every other record must have non-empty reasoning. Auto-captured trades do not count as sealed in seal coverage.
+- Records are validated strictly before hashing (`validateRecord` in `packages/protocol`): exactly these fields, `v: 1`, lowercase hex for every hash and address (never checksummed), `seq` and `ts` as safe integers, amounts as integer strings without leading zeros, passes with `intent: null` and trades with an intent. Anything else is rejected, so two implementations can never hash different bytes for the same decision.
 
 ### 2. Canonicalization
 
@@ -85,10 +88,27 @@ leaf       = keccak256( 0x00 || salt || recordHash )
 
 The salt stops anyone brute-forcing short reasoning from the public leaf. `0x00` is the leaf domain prefix.
 
+### 3a. Tool-call hashes
+
+```
+toolHash = keccak256( 0x02 || salt || utf8( JCS(value) ) )
+```
+
+Each tool call's `args` object and its `result` get their own 32-byte random salt, stored locally next to the plaintext. Revealing a record publishes the record's salt, so per-value salts are what keep short arguments like `"NVDA"` from being guessed out of a revealed record. To show one call's plaintext, the owner reveals `{ value, salt }` for it and anyone can recompute the hash. `0x02` is the tool-hash domain prefix.
+
+### 3b. Agent id
+
+```
+agentId = keccak256( abi.encode(address wallet, uint256 chainId, bytes32 salt) )
+```
+
+`AgentRegistry.register(salt, …)` computes this on chain from `msg.sender`, so nobody can register another wallet's id.
+
 ### 4. Batching and the Merkle root
 
 - Interior nodes: `keccak256( 0x01 || min(a,b) || max(a,b) )` (sorted pairs, so proofs need no direction bits). Odd node is promoted.
 - A batch covers a contiguous `seq` range `[firstSeq, firstSeq + count)`.
+- Sorted pairs mean a proof shows a leaf is **in** a batch, not its position. A leaf's `seq` is proven when the batch has one leaf (`firstSeq` is its seq) or when the record is revealed (the record contains its `seq`).
 - **Trade decisions are sealed immediately** as a batch of one (root = leaf) because the trade must wait for it.
 - Passes and other non-trade records are batched every 10 s or 64 records, whichever comes first.
 
@@ -119,12 +139,15 @@ For unrevealed records the indexer can't see the intent, so the recorder also su
 
 `verify(input)` in `packages/protocol` returns a list of checks, used by both the API and the browser:
 
-1. Seal exists: leaf → proof → root → `Sealed` log at block B (browser re-reads the log via RPC).
-2. Sequence intact: `seq` sits inside the batch range; `prev` matches the previous revealed leaf when available.
-3. Sealed before trade: linked trade tx block T > B.
-4. Reasoning matches (revealed only): recomputed leaf equals sealed leaf.
-5. Wallet bound: tx `from` equals the agent's wallet in AgentRegistry, bound at block ≤ B.
-6. Outcome from chain: realized PnL computed from transfers, not from the record.
+Each check is `pass`, `fail` or `skip` (cannot be checked with the data given, e.g. private reasoning). A record verifies when nothing fails.
+
+1. `seal_exists`: leaf → proof → root → `Sealed` log at block B (browser re-reads the log via RPC).
+2. `sequence_intact`: `seq` sits inside the batch range; `prev` matches the previous leaf when available. Skipped for an unrevealed leaf inside a multi-leaf batch, whose position is not proven yet.
+3. `sealed_before_trade`: linked trade tx block T > B. A trade linked to a pass fails.
+4. `reasoning_matches` (revealed only): recomputed leaf equals sealed leaf.
+5. `reasoning_recorded` (revealed only): fails when the record is `autoCaptured`.
+6. `wallet_bound`: tx `from` equals the agent's wallet in AgentRegistry, bound at block ≤ B.
+7. `outcome_from_chain`: realized PnL computed from transfers, not from the record.
 
 ## Indexer pipeline
 

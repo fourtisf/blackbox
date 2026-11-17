@@ -54,7 +54,16 @@ if (id !== 31337) {
 
 const forge = spawnSync(
   'forge',
-  ['script', 'script/Deploy.s.sol:Deploy', '--rpc-url', rpc, '--broadcast', '--unlocked', '--sender', ANVIL_ACCOUNT_0],
+  [
+    'script',
+    'script/Deploy.s.sol:Deploy',
+    '--rpc-url',
+    rpc,
+    '--broadcast',
+    '--unlocked',
+    '--sender',
+    ANVIL_ACCOUNT_0,
+  ],
   { cwd: root, stdio: 'inherit' },
 );
 if (forge.status !== 0) {

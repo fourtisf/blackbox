@@ -1,0 +1,31 @@
+# Local Postgres 16 and Redis 7, matching DATABASE_URL and REDIS_URL in .env.example.
+# Start: pnpm db:up    Stop: pnpm db:down    (data persists in the pgdata volume)
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: blackbox
+      POSTGRES_PASSWORD: change-me
+      POSTGRES_DB: blackbox
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U blackbox -d blackbox']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7
+    ports:
+      - '127.0.0.1:6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pgdata:

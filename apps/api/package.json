@@ -1,0 +1,29 @@
+{
+  "name": "@blackbox/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "prisma generate && tsc -p tsconfig.build.json",
+    "dev": "dotenv -e ../../.env -- tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "typecheck": "prisma generate && tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "prisma": "dotenv -e ../../.env -- prisma",
+    "test:integration": "dotenv -e ../../.env -- vitest run --config vitest.integration.config.ts"
+  },
+  "dependencies": {
+    "@blackbox/protocol": "workspace:*",
+    "@prisma/client": "6.19.3",
+    "fastify": "^4.29.1",
+    "ioredis": "^5.11.0",
+    "zod": "^4.6.0"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.1.0",
+    "prisma": "6.19.3",
+    "tsx": "^4.23.0",
+    "vitest": "^4.1.0"
+  }
+}

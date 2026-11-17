@@ -1,4 +1,4 @@
-// Draft schema for apps/api. Review and adjust; keep field meanings from docs/06-DATA-AND-METRICS.md.
+// Schema for apps/api. Field meanings: docs/06-DATA-AND-METRICS.md.
 
 generator client {
   provider = "prisma-client-js"
@@ -81,6 +81,9 @@ model Decision {
   assetAddress String?
   ts         DateTime?
   late       Boolean      @default(false)
+  // Recorder captured the trade itself because the agent never called record_decision.
+  // Such trades do not count toward seal coverage (docs/06).
+  autoCaptured Boolean    @default(false)
   // Revealed data, only stored after hash verification
   revealed   Boolean      @default(false)
   revealedAt DateTime?

@@ -22,12 +22,19 @@ Markets in v1: tokenized stocks and memecoins on Robinhood Chain. Solana and Hyp
 ## Commands (create these)
 
 ```
-pnpm install
-pnpm dev            # web :3000, api :4000, indexer
-pnpm test           # all packages
-pnpm lint && pnpm typecheck
-pnpm --filter contracts test     # forge test
+pnpm install                     # also installs forge and anvil (npm @foundry-rs/*)
+git submodule update --init      # forge-std
+cp .env.example .env
+pnpm db:up                       # Postgres 16 + Redis 7 (docker compose)
 pnpm --filter api prisma migrate dev
+pnpm --filter contracts deploy:local   # anvil + contracts; keeps anvil running
+pnpm dev            # web :3000, api :4000, indexer
+pnpm test           # all packages (no database needed)
+pnpm lint && pnpm typecheck
+pnpm --filter contracts test     # forge test --isolate + one-command anvil deploy
+pnpm --filter contracts gas      # gas report
+pnpm --filter api test:integration     # needs pnpm db:up and migrations
+pnpm --filter protocol vectors   # regenerate vectors.json after a deliberate protocol change
 pnpm --filter recorder build && node packages/recorder/dist/cli.js --help
 ```
 

@@ -4,11 +4,11 @@ Each milestone ends with: lint, typecheck and tests green; a short report (what 
 
 ## Milestone 1: Foundation and protocol
 
-- [ ] pnpm + Turborepo monorepo with `apps/web`, `apps/api`, `apps/indexer`, `packages/protocol`, `packages/recorder`, `packages/contracts`; shared tsconfig, ESLint, Prettier, Vitest.
-- [ ] `packages/protocol`: RFC 8785 canonical JSON (with RFC test vectors), `recordHash`, `leaf`, sorted-pair Merkle tree + proofs, `verify()` returning typed checks. Works in Node and browser. `PROTOCOL_VERSION = 1`.
-- [ ] Golden test vectors file `packages/protocol/vectors.json` (record → recordHash → leaf → root) used by every package's tests.
-- [ ] `packages/contracts`: AgentRegistry + SealRegistry from the drafts, full Foundry tests, gas report, deploy script. Deploy to a local anvil chain.
-- [ ] Docker Compose for local Postgres + Redis. Prisma schema migrated.
+- [x] pnpm + Turborepo monorepo with `apps/web`, `apps/api`, `apps/indexer`, `packages/protocol`, `packages/recorder`, `packages/contracts`; shared tsconfig, ESLint, Prettier, Vitest.
+- [x] `packages/protocol`: RFC 8785 canonical JSON (with RFC test vectors), `recordHash`, `leaf`, sorted-pair Merkle tree + proofs, `verify()` returning typed checks. Works in Node and browser. `PROTOCOL_VERSION = 1`.
+- [x] Golden test vectors file `packages/protocol/vectors.json` (record → recordHash → leaf → root) used by every package's tests.
+- [x] `packages/contracts`: AgentRegistry + SealRegistry from the drafts, full Foundry tests, gas report, deploy script. Deploy to a local anvil chain.
+- [x] Docker Compose for local Postgres + Redis. Prisma schema migrated.
 
 Done when: `pnpm test` passes, including protocol vectors and `forge test`; contracts deploy to anvil with one command.
 
